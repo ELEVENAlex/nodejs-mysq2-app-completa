@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+
 const pool = require('../database')
 
 /* GET users listing. */
@@ -19,12 +20,14 @@ router.post('/add', async (req, res) => {
   const newLink = {title, url, description}
   console.log(newLink)
   await pool.query('INSERT INTO links SET ?', [newLink])
+  req.flash('success', 'Link added succesfully')
   res.redirect('/links')
 })
 
 router.get('/delete/:id', async(req, res) => {
   const {id} = req.params
   await pool.query('DELETE FROM links WHERE id = ?', [id])
+  req.flash('success', 'Link deleted succesfully')
   res.redirect('/links')
 })
 
@@ -44,6 +47,7 @@ router.post('/edit/:id', async(req, res) => {
     description
   }
   await pool.query('UPDATE links SET ? WHERE id = ?', [newLink, id])
+  req.flash('success', 'Link edited succesfully')
   res.redirect('/links')
 })
 
