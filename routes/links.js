@@ -9,4 +9,12 @@ router.get('/', async (req, res, next) => {
   res.json(result)
 });
 
+router.get('/add', async (req, res) => {
+  res.render('links/add')
+})
+
+router.post('/add', async (req, res) => {
+  res.send('Received')
+})
+
 module.exports = router;
