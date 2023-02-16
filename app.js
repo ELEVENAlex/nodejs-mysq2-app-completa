@@ -7,54 +7,64 @@ const { engine } = require('express-handlebars')
 const flash = require('connect-flash')
 const session = require('express-session')
 const smysql = require('express-mysql-session')
-const {database} = require('./keys')
+const { database } = require('./keys')
+const passport = require('passport')
 
 const indexRouter = require('./routes/index');
 const linksRouter = require('./routes/links');
-const authRouter = require('./routes/authentication');
+const authenticationRouter = require('./routes/authentication');
 
+//Initializations
 const app = express();
+require('./lib/passport')
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-
-// HANDLEBARS
 app.engine('.hbs', engine({
   defaultLayout: 'main',
-  layoutsDir: path.join(app.get('views'), 'layouts'),
-  partialsDir: path.join(app.get('views'), 'partials'),
+  layoutsDir:  path.join(app.get('views'), 'layouts'),
+  partialsDir:  path.join(app.get('views'), 'partials'),
   extname: '.hbs',
-  helpers: require('./lib/handlebars')
+  helpers: require('./lib/handlebars'),
+  runtimeOptions: {
+    allowProtoPropertiesByDefault: true,
+    allowProtoMethodsByDefault: true
+  }
 }))
 
-app.set('view engine', 'hbs');
+app.set('view engine', '.hbs');
 
-// middlewares
+//Middlewares
 app.use(session({
   secret: 'patata',
   resave: false,
   saveUninitialized: false,
   store: new smysql(database)
 }))
+
 app.use(flash())
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(passport.initialize())
+app.use(passport.session())
 
-// global variables
+
+
+//Global Variables
 app.use((req, res, next) => {
-
   app.locals.success = req.flash('success')
   next()
 
 })
-
-// routes
+//Routes
 app.use('/', indexRouter);
+app.use('/', authenticationRouter);
 app.use('/links', linksRouter);
-app.use('/authentication', authRouter);
 
+
+//Public
 app.use(express.static(path.join(__dirname, 'public')));
 
 // catch 404 and forward to error handler
